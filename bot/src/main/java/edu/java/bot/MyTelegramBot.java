@@ -16,10 +16,10 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableConfigurationProperties(ApplicationConfig.class)
 public class MyTelegramBot {
-    static String token;
-    static TelegramBot bot;
-    static Map<Long, ArrayList<String>> trackingURLs;
-    static ApplicationConfig config;
+    static private String token;
+    static private TelegramBot bot;
+    static private Map<Long, ArrayList<String>> trackingURLs;
+    static private ApplicationConfig config;
 
     @Autowired
     public MyTelegramBot(ApplicationConfig cfg) {
@@ -54,10 +54,6 @@ public class MyTelegramBot {
 
     public static ArrayList<String> getTrackList(long id) {
         return trackingURLs.get(id);
-    }
-
-    public static void process(SendMessage message) {
-        bot.execute(message);
     }
 
     void init() {
