@@ -1,8 +1,20 @@
 package edu.java.bot.commands;
 
-import edu.java.bot.MyTelegramBot;
+import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.domain.Link;
+import edu.java.bot.exception.NoSuchUserException;
+import edu.java.bot.service.UserService;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class ListCommand implements Command {
+public class ListCommand extends AbstractCommand implements Command {
+
+    private final UserService userService;
+
+    public ListCommand(UserService userService) {
+        this.userService = userService;
+    }
+
     @Override
     public String name() {
         return "/list";
@@ -13,19 +25,19 @@ public class ListCommand implements Command {
         return "показать список отслеживаемых ссылок";
     }
 
-    @Override
-    public String handle(String args, long id) {
+    public SendMessage handleImpl(String args, long id) {
         String text;
-        if (MyTelegramBot.checkId(id)) {
-            if (MyTelegramBot.checkTrackListEmpty(id)) {
-                text = "Ни одна ссылка не отслеживается";
+        try {
+            List<Link> trackList = userService.getTrackList(id);
+            if (trackList.isEmpty()) {
+                text = "No link is tracking now";
             } else {
-                text =
-                    "Список отслеживаемых ссылок: " + "\n" + String.join("\n", MyTelegramBot.getTrackList(id));
+                text = "List of tracking links:\n" + trackList.stream().map(Link::toString).collect(
+                    Collectors.joining("\n"));
             }
-        } else {
-            text = "Вы не зарегистрированы. Введите /start для регистрации";
+        } catch (NoSuchUserException e) {
+            text = notRegisteredResponse;
         }
-        return text;
+        return new SendMessage(id, text);
     }
 }

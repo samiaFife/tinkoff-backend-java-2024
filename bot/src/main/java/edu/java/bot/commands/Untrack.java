@@ -1,8 +1,17 @@
 package edu.java.bot.commands;
 
-import edu.java.bot.MyTelegramBot;
+import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.exception.NoSuchUserException;
+import edu.java.bot.exception.TrackingURIException;
+import edu.java.bot.service.UserService;
 
-public class Untrack implements Command {
+public class Untrack extends AbstractCommand implements Command {
+    private final UserService userService;
+
+    public Untrack(UserService userService) {
+        this.userService = userService;
+    }
+
     @Override
     public String name() {
         return "/untrack";
@@ -13,24 +22,20 @@ public class Untrack implements Command {
         return "прекратить отслеживание ссылки";
     }
 
-    @Override
-    public String handle(String args, long id) {
+    public SendMessage handleImpl(String args, long id) {
         String text;
-        if (MyTelegramBot.checkId(id)) {
-            if (args.isBlank()) {
-                text = "Вы не ввели ссылку";
-            } else {
-                text = "Ссылка " + args;
-                if (!MyTelegramBot.checkUri(id, args)) {
-                    text += " и так не отслеживается";
-                } else {
-                    MyTelegramBot.removeUri(id, args);
-                    text += " теперь не отслеживается";
-                }
-            }
+        if (args.isBlank()) {
+            text = noLinkResponse;
         } else {
-            text = "Вы не зарегистрированы. Введите /start для регистрации";
+            try {
+                userService.untrack(id, args);
+                text = "Link " + args + " is not tracking now!";
+            } catch (TrackingURIException e) {
+                text = "Error: " + e.getMessage();
+            } catch (NoSuchUserException e) {
+                text = notRegisteredResponse;
+            }
         }
-        return text;
+        return new SendMessage(id, text);
     }
 }

@@ -1,8 +1,19 @@
 package edu.java.bot.commands;
 
-import edu.java.bot.MyTelegramBot;
+import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.exception.UserException;
+import edu.java.bot.service.UserService;
+import org.springframework.stereotype.Component;
 
-public class Start implements Command {
+@Component
+public class Start extends AbstractCommand implements Command {
+
+    private final UserService userService;
+
+    public Start(UserService userService) {
+        this.userService = userService;
+    }
+
     @Override
     public String name() {
         return "/start";
@@ -13,17 +24,17 @@ public class Start implements Command {
         return "зарегистрировать пользователя";
     }
 
-    @Override
-    public String handle(String args, long id) {
-        String text = "Успешная регистрация!";
+    public SendMessage handleImpl(String args, long id) {
+        String text = "Successfully registered!";
         if (!args.isEmpty()) {
-            text = "Используйте команду /start без параметров";
-        }
-        if (MyTelegramBot.checkId(id)) {
-            text = "Вы уже зарегистрированы";
+            text = "Use command /start without parameters";
         } else {
-            MyTelegramBot.createUser(id);
+            try {
+                userService.register(id);
+            } catch (UserException e) {
+                text = "Error: " + e.getMessage();
+            }
         }
-        return text;
+        return new SendMessage(id, text);
     }
 }

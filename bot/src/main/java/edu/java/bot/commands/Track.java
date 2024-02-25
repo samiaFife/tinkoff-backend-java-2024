@@ -1,8 +1,17 @@
 package edu.java.bot.commands;
 
-import edu.java.bot.MyTelegramBot;
+import com.pengrad.telegrambot.request.SendMessage;
+import edu.java.bot.exception.NoSuchUserException;
+import edu.java.bot.exception.TrackingURIException;
+import edu.java.bot.service.UserService;
 
-public class Track implements Command {
+public class Track extends AbstractCommand implements Command {
+    private final UserService userService;
+
+    public Track(UserService userService) {
+        this.userService = userService;
+    }
+
     @Override
     public String name() {
         return "/track";
@@ -13,25 +22,20 @@ public class Track implements Command {
         return "начать отслеживание ссылки";
     }
 
-    @Override
-    public String handle(String args, long id) {
+    public SendMessage handleImpl(String args, long id) {
         String text;
-        if (MyTelegramBot.checkId(id)) {
-            if (args.isBlank()) {
-                text = "Вы не ввели ссылку";
-            } else {
-                text = "Ссылка " + args;
-                if (MyTelegramBot.checkUri(id, args)) {
-                    text += " уже отслеживается";
-                } else {
-                    MyTelegramBot.addUri(id, args);
-                    text += " теперь отслеживается";
-                }
-            }
-
+        if (args.isBlank()) {
+            text = noLinkResponse;
         } else {
-            text = "Вы не зарегистрированы. Введите /start для регистрации";
+            try {
+                userService.track(id, args);
+                text = "Link " + args + " is successfully tracking now!";
+            } catch (TrackingURIException e) {
+                text = "Error: " + e.getMessage();
+            } catch (NoSuchUserException e) {
+                text = notRegisteredResponse;
+            }
         }
-        return text;
+        return new SendMessage(id, text);
     }
 }

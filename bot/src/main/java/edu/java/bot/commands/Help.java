@@ -1,6 +1,8 @@
 package edu.java.bot.commands;
 
-public class Help implements Command {
+import com.pengrad.telegrambot.request.SendMessage;
+
+public class Help extends AbstractCommand implements Command {
     @Override
     public String name() {
         return "/help";
@@ -11,12 +13,11 @@ public class Help implements Command {
         return "вывести окно с командами";
     }
 
-    @Override
-    public String handle(String args, long id) {
+    public SendMessage handleImpl(String args, long id) {
         StringBuilder sb = new StringBuilder();
-        for (Command command : COMMAND_LIST) {
+        for (Command command : CommandConfig.getCommandList()) {
             sb.append(command.name()).append(" - ").append(command.description()).append("\n");
         }
-        return sb.toString();
+        return new SendMessage(id, sb.toString());
     }
 }

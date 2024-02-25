@@ -1,81 +1,35 @@
 package edu.java.bot;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.UpdatesListener;
-import com.pengrad.telegrambot.model.Message;
-import com.pengrad.telegrambot.model.Update;
-import com.pengrad.telegrambot.request.SendMessage;
+import com.pengrad.telegrambot.model.BotCommand;
+import com.pengrad.telegrambot.request.SetMyCommands;
+import edu.java.bot.commands.CommandConfig;
+import edu.java.bot.commands.Help;
+import edu.java.bot.commands.ListCommand;
+import edu.java.bot.commands.Start;
+import edu.java.bot.commands.Track;
+import edu.java.bot.commands.Untrack;
 import edu.java.bot.configuration.ApplicationConfig;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.java.bot.service.UserService;
+import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
 @EnableConfigurationProperties(ApplicationConfig.class)
 public class MyTelegramBot {
-    static private String token;
-    static private TelegramBot bot;
-    static private Map<Long, ArrayList<String>> trackingURLs;
-    static private ApplicationConfig config;
 
-    @Autowired
-    public MyTelegramBot(ApplicationConfig cfg) {
-        config = cfg;
-        init();
-        run();
-    }
-
-    public static boolean checkId(long id) {
-        return trackingURLs.containsKey(id);
-    }
-
-    public static void createUser(long id) {
-        trackingURLs.put(id, new ArrayList<>());
-    }
-
-    public static void addUri(long id, String uri) {
-        trackingURLs.get(id).add(uri);
-    }
-
-    public static void removeUri(long id, String uri) {
-        trackingURLs.get(id).remove(uri);
-    }
-
-    public static boolean checkUri(long id, String args) {
-        return trackingURLs.get(id).contains(args);
-    }
-
-    public static boolean checkTrackListEmpty(long id) {
-        return trackingURLs.get(id).isEmpty();
-    }
-
-    public static ArrayList<String> getTrackList(long id) {
-        return trackingURLs.get(id);
-    }
-
-    void init() {
-        token = config.telegramToken();
-        trackingURLs = new HashMap<>();
-    }
-
-    String handle(Message message) {
-        return Handler.handle(message.text(), message.chat().id());
-    }
-
-    void run() {
-        bot = new TelegramBot(token);
-        bot.setUpdatesListener(updates -> {
-                for (Update update : updates) {
-                    Message message = update.message();
-                    if (message != null) {
-                        bot.execute(new SendMessage(message.chat().id(), handle(message)));
-                    }
-                }
-                return UpdatesListener.CONFIRMED_UPDATES_ALL;
-            }
-        );
+    public MyTelegramBot(ApplicationConfig cfg, UserService userService) {
+        CommandConfig.setCommandList(List.of(
+            new Help(),
+            new ListCommand(userService),
+            new Start(userService),
+            new Track(userService),
+            new Untrack(userService)
+        ));
+        TelegramBot bot = new TelegramBot(cfg.telegramToken());
+        bot.setUpdatesListener(new BotUpdatesListener(bot));
+        bot.execute(new SetMyCommands(CommandConfig.getCommandList().stream()
+            .map(e -> new BotCommand(e.name(), e.description())).toList().toArray(new BotCommand[0])));
     }
 }
