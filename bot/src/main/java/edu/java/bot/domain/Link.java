@@ -3,7 +3,13 @@ package edu.java.bot.domain;
 import java.util.Objects;
 import lombok.Getter;
 
-@Getter public record Link(String scheme, String authority, String path, String query, String fragment) {
+@Getter public class Link {
+    private final String scheme;
+    private final String authority;
+    private final String path;
+    private final String query;
+    private final String fragment;
+
     public Link(String scheme, String authority, String path, String query, String fragment) {
         this.scheme = scheme == null ? "" : scheme + "://";
         this.authority = authority == null ? "" : authority;
@@ -20,7 +26,8 @@ import lombok.Getter;
             return false;
         }
         Link link = (Link) o;
-        return Objects.equals(authority, link.authority) && Objects.equals(path, link.path)
+        return (Objects.equals(authority, link.authority) && Objects.equals(path, link.path))
+            || (Objects.equals(authority, link.path) || Objects.equals(path, link.authority))
             && Objects.equals(query, link.query) && Objects.equals(fragment, link.fragment);
     }
 
@@ -31,6 +38,6 @@ import lombok.Getter;
 
     @Override
     public String toString() {
-        return scheme + authority;
+        return scheme + authority + path + query + fragment;
     }
 }

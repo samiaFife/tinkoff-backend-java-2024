@@ -18,6 +18,6 @@ public class Help extends AbstractCommand implements Command {
         for (Command command : CommandConfig.getCommandList()) {
             sb.append(command.name()).append(" - ").append(command.description()).append("\n");
         }
-        return new SendMessage(id, sb.toString());
+        return new SendMessage(id, sb.toString().trim());
     }
 }

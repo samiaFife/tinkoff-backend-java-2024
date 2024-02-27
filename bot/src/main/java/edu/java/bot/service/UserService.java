@@ -23,11 +23,12 @@ public class UserService {
         userRepository.init();
     }
 
-    public void register(Long id) throws UserException {
+    public User register(Long id) throws UserException {
         User user = new User();
         user.setId(id);
         user.setTrackingURLs(new ArrayList<>());
         userRepository.save(user);
+        return user;
     }
 
     public void track(Long id, String link) throws TrackingURIException, NoSuchUserException {

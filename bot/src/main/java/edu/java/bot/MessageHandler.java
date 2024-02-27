@@ -7,10 +7,7 @@ import edu.java.bot.commands.CommandConfig;
 public class MessageHandler {
     private static final String UNKNOWN_REQUEST_RESPONSE = "Неизвестная команда";
 
-    private MessageHandler() {
-    }
-
-    static SendMessage handle(String source, long id) {
+    public SendMessage process(String source, long id) {
         String text = source.replaceAll("\\s+", " ");
         int spacePos = text.indexOf(' ');
         if (spacePos == -1) {

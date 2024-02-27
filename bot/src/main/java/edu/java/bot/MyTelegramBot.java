@@ -28,7 +28,7 @@ public class MyTelegramBot {
             new Untrack(userService)
         ));
         TelegramBot bot = new TelegramBot(cfg.telegramToken());
-        bot.setUpdatesListener(new BotUpdatesListener(bot));
+        bot.setUpdatesListener(new BotUpdatesListener(bot, new MessageHandler()));
         bot.execute(new SetMyCommands(CommandConfig.getCommandList().stream()
             .map(e -> new BotCommand(e.name(), e.description())).toList().toArray(new BotCommand[0])));
     }

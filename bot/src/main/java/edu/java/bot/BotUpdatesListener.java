@@ -8,9 +8,11 @@ import java.util.List;
 
 public class BotUpdatesListener implements UpdatesListener {
     private final TelegramBot bot;
+    private final MessageHandler handler;
 
-    public BotUpdatesListener(TelegramBot bot) {
+    public BotUpdatesListener(TelegramBot bot, MessageHandler handler) {
         this.bot = bot;
+        this.handler = handler;
     }
 
     @Override
@@ -19,7 +21,7 @@ public class BotUpdatesListener implements UpdatesListener {
             Message message = update.message();
             if (message != null) {
                 long id = message.chat().id();
-                bot.execute(MessageHandler.handle(message.text(), id));
+                bot.execute(handler.process(message.text(), id));
             }
         }
         return UpdatesListener.CONFIRMED_UPDATES_ALL;

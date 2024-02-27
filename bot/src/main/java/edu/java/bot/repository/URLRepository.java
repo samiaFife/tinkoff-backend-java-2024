@@ -21,9 +21,9 @@ public class URLRepository {
     }
 
     public boolean checkURI(Link uri) {
-        if (uri != null && !(uri.authority().isBlank() && uri.path().isBlank())) {
+        if (uri != null && !(uri.getAuthority().isBlank() && uri.getPath().isBlank())) {
             for (String auth : supportedAuthorities) {
-                if (uri.authority().equals(auth) || uri.path().equals(auth)) {
+                if (uri.getAuthority().equals(auth) || uri.getPath().equals(auth)) {
                     return true;
                 }
             }
